@@ -380,9 +380,9 @@ canvas#hero-canvas {
     font-weight: 500;
     color: var(--color-text-secondary);
     margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: block;
+    min-height: 4.5rem; /* Reserve vertical space to prevent content jumping */
+    line-height: 1.4;
 }
 
 .typing-text {
@@ -1324,7 +1324,8 @@ canvas#hero-canvas {
     }
 
     .hero-subtitle {
-        justify-content: center;
+        text-align: center;
+        min-height: 5.5rem; /* Reserve slightly more vertical space on mobile for wrapped lines */
     }
 
     .hero-actions {

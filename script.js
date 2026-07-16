@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
             navMenu.classList.toggle('open');
             mobileToggle.classList.toggle('open');
             // Toggle hamburger icon rotation
-            mobileToggle.classList.contains('open') 
-                ? mobileToggle.style.transform = 'rotate(0)' 
+            mobileToggle.classList.contains('open')
+                ? mobileToggle.style.transform = 'rotate(0)'
                 : mobileToggle.style.transform = '';
         });
 
@@ -68,41 +68,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const typingTextElement = document.getElementById('typing-text');
     const words = [
-        'University Student.',
-        'UI/UX Designer.',
-        'Software Engineer.',
-        'Business Analyst.'
+        { text: 'I am a University Student.', append: false },
+        { text: 'I\'m passionate about UI/UX Designing, ', append: false },
+        { text: 'Software Engineering, ', append: true },
+        { text: 'and Business Analysis.', append: true }
     ];
+
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
     let typingSpeed = 100;
+    let accumulatedText = '';
 
     function typeEffect() {
         if (!typingTextElement) return;
 
-        const currentWord = words[wordIndex];
-        
-        if (isDeleting) {
-            // Delete characters
-            typingTextElement.textContent = currentWord.substring(0, charIndex - 1);
-            charIndex--;
-            typingSpeed = 50; // Deletes faster
-        } else {
-            // Add characters
-            typingTextElement.textContent = currentWord.substring(0, charIndex + 1);
-            charIndex++;
-            typingSpeed = 100; // Normal typing speed
-        }
+        const currentItem = words[wordIndex];
+        const currentText = currentItem.text;
 
-        // Handle states
-        if (!isDeleting && charIndex === currentWord.length) {
-            typingSpeed = 2000; // Pause at end of word
-            isDeleting = true;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            wordIndex = (wordIndex + 1) % words.length;
-            typingSpeed = 500; // Pause before typing next word
+        if (isDeleting) {
+            // Fade out the typing text smoothly instead of backspacing character-by-character
+            typingTextElement.style.transition = 'opacity 0.35s ease';
+            typingTextElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                isDeleting = false;
+                accumulatedText = '';
+                wordIndex = (wordIndex + 1) % words.length;
+                charIndex = 0;
+                typingTextElement.textContent = '';
+                typingTextElement.style.opacity = '1';
+                
+                // Pause briefly in the faded-out state before typing the next sequence
+                setTimeout(typeEffect, 300);
+            }, 350);
+            return;
+        } else {
+            // Type the current text character by character
+            typingTextElement.textContent = accumulatedText + currentText.substring(0, charIndex + 1);
+            charIndex++;
+            typingSpeed = 70; // Slightly faster, more natural speed
+
+            if (charIndex === currentText.length) {
+                const nextItem = words[(wordIndex + 1) % words.length];
+                
+                if (nextItem && nextItem.append) {
+                    // Pause before appending the next segment
+                    typingSpeed = 800;
+                    accumulatedText += currentText;
+                    wordIndex = (wordIndex + 1) % words.length;
+                    charIndex = 0;
+                } else {
+                    // Finished typing the entire sequence: pause so user can read it, then trigger fade out
+                    typingSpeed = 2500;
+                    isDeleting = true;
+                }
+            }
         }
 
         setTimeout(typeEffect, typingSpeed);
@@ -184,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Animation Loop
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             particles.forEach(p => {
                 p.update();
                 p.draw();
@@ -209,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }, { threshold: 0.1 });
-        
+
         canvasObserver.observe(document.getElementById('home'));
     }
 
@@ -229,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const target = skillPercents[index].getAttribute('data-target');
                         bar.style.width = target;
                     });
-                    
+
                     // Animate number count
                     skillPercents.forEach(percent => {
                         const target = parseInt(percent.getAttribute('data-target'));
@@ -272,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             projectCards.forEach(card => {
                 const category = card.getAttribute('data-category');
-                
+
                 // Show/hide based on category selection
                 if (filterValue === 'all' || category === filterValue) {
                     card.style.display = 'flex';
