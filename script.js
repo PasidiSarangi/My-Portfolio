@@ -68,10 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const typingTextElement = document.getElementById('typing-text');
     const words = [
-        { text: 'I am a University Student.', append: false },
-        { text: 'I\'m passionate about UI/UX Designing, ', append: false },
-        { text: 'Software Engineering, ', append: true },
-        { text: 'and Business Analysis.', append: true }
+        { text: "I'm an IT Undergraduate at SLIIT.", append: false },
+        { text: "I'm interested in UI/UX Design & Software Engineering.", append: false }
     ];
 
     let wordIndex = 0;
@@ -90,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fade out the typing text smoothly instead of backspacing character-by-character
             typingTextElement.style.transition = 'opacity 0.35s ease';
             typingTextElement.style.opacity = '0';
-            
+
             setTimeout(() => {
                 isDeleting = false;
                 accumulatedText = '';
@@ -98,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 charIndex = 0;
                 typingTextElement.textContent = '';
                 typingTextElement.style.opacity = '1';
-                
+
                 // Pause briefly in the faded-out state before typing the next sequence
                 setTimeout(typeEffect, 300);
             }, 350);
@@ -111,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (charIndex === currentText.length) {
                 const nextItem = words[(wordIndex + 1) % words.length];
-                
+
                 if (nextItem && nextItem.append) {
                     // Pause before appending the next segment
                     typingSpeed = 800;
@@ -277,42 +275,105 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 6. PROJECTS FILTER TAB SELECTION
+    // 6. PROJECTS CAROUSEL SLIDER
     // ==========================================
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const projectCards = document.querySelectorAll('.project-card');
+    const slider = document.querySelector('.projects-slider');
+    const prevBtn = document.querySelector('.slider-arrow.prev');
+    const nextBtn = document.querySelector('.slider-arrow.next');
+    const dotsContainer = document.querySelector('.slider-pagination');
 
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from buttons
-            filterButtons.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
+    if (slider) {
+        const getCardWidth = () => {
+            const cards = slider.querySelectorAll('.project-card');
+            if (cards.length === 0) return 0;
+            return cards[0].offsetWidth + parseInt(window.getComputedStyle(slider).gap || '0');
+        };
 
-            const filterValue = btn.getAttribute('data-filter');
+        const updateSliderControls = () => {
+            const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
 
-            projectCards.forEach(card => {
-                const category = card.getAttribute('data-category');
-
-                // Show/hide based on category selection
-                if (filterValue === 'all' || category === filterValue) {
-                    card.style.display = 'flex';
-                    // Smooth entry fade
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'scale(1)';
-                    }, 50);
+            if (prevBtn) {
+                if (slider.scrollLeft <= 5) {
+                    prevBtn.classList.add('disabled');
                 } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.95)';
-                    // Delay display:none to let fade finish
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 200);
+                    prevBtn.classList.remove('disabled');
                 }
+            }
+
+            if (nextBtn) {
+                if (slider.scrollLeft >= maxScrollLeft - 5) {
+                    nextBtn.classList.add('disabled');
+                } else {
+                    nextBtn.classList.remove('disabled');
+                }
+            }
+
+            // Update active dot
+            const cards = slider.querySelectorAll('.project-card');
+            const dots = dotsContainer ? dotsContainer.querySelectorAll('.slider-dot') : [];
+            if (cards.length > 0 && dots.length > 0) {
+                const cardWidth = getCardWidth();
+                const activeIndex = Math.min(dots.length - 1, Math.round(slider.scrollLeft / cardWidth));
+                dots.forEach((dot, index) => {
+                    if (index === activeIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+        };
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                slider.scrollBy({ left: -getCardWidth(), behavior: 'smooth' });
             });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                slider.scrollBy({ left: getCardWidth(), behavior: 'smooth' });
+            });
+        }
+
+        // Initialize dots dynamically based on visible cards viewport capacity
+        const buildSliderDots = () => {
+            if (!dotsContainer) return;
+            const cards = slider.querySelectorAll('.project-card');
+            if (cards.length === 0) return;
+
+            const cardWidth = getCardWidth();
+            const visibleCards = Math.max(1, Math.round(slider.clientWidth / cardWidth));
+            const totalDots = Math.max(1, cards.length - visibleCards + 1);
+
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < totalDots; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('slider-dot');
+                if (i === 0) dot.classList.add('active');
+
+                dot.addEventListener('click', () => {
+                    slider.scrollTo({ left: i * getCardWidth(), behavior: 'smooth' });
+                });
+
+                dotsContainer.appendChild(dot);
+            }
+        };
+
+        buildSliderDots();
+
+        slider.addEventListener('scroll', updateSliderControls);
+        window.addEventListener('resize', () => {
+            buildSliderDots();
+            updateSliderControls();
         });
-    });
+
+        // Initial control check
+        setTimeout(() => {
+            buildSliderDots();
+            updateSliderControls();
+        }, 100);
+    }
 
     // ==========================================
     // 7. SCROLL REVEAL ON VISIBILITY
@@ -332,48 +393,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     revealElements.forEach(el => revealObserver.observe(el));
 
+
+
     // ==========================================
-    // 8. CONTACT FORM VALIDATION & MOCK SUBMIT
+    // 9. CASE STUDY MODAL INTERACTION
     // ==========================================
-    const contactForm = document.getElementById('contact-form');
-    const formFeedback = document.getElementById('form-feedback');
-    const submitBtn = document.getElementById('form-submit-btn');
+    const modalTriggers = document.querySelectorAll('[data-modal-target]');
+    const modals = document.querySelectorAll('.modal-overlay');
+    const modalCloses = document.querySelectorAll('.modal-close');
 
-    if (contactForm && formFeedback) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // Simple validation check
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
-            const subjectInput = document.getElementById('subject');
-            const messageInput = document.getElementById('message');
-
-            if (!nameInput.value.trim() || !emailInput.value.trim() || !subjectInput.value.trim() || !messageInput.value.trim()) {
-                showFeedback('Please fill out all fields.', 'error');
-                return;
-            }
-
-            // Simulate form loading
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Sending... <i class="fa-solid fa-spinner fa-spin"></i>';
-            showFeedback('', '');
-
-            setTimeout(() => {
-                // Mock success state
-                showFeedback('Thank you for reaching out! Your message was sent successfully.', 'success');
-                contactForm.reset();
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Send Message <i class="fa-solid fa-paper-plane"></i>';
-            }, 1500);
+    if (modalTriggers.length > 0) {
+        modalTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const targetId = trigger.getAttribute('data-modal-target');
+                const targetModal = document.getElementById(targetId);
+                if (targetModal) {
+                    targetModal.classList.add('open');
+                    document.body.style.overflow = 'hidden'; // Disable page scrolling
+                }
+            });
         });
 
-        function showFeedback(msg, status) {
-            formFeedback.textContent = msg;
-            formFeedback.className = 'form-feedback'; // reset
-            if (status) {
-                formFeedback.classList.add(status);
+        modalCloses.forEach(close => {
+            close.addEventListener('click', () => {
+                const modal = close.closest('.modal-overlay');
+                if (modal) {
+                    modal.classList.remove('open');
+                    document.body.style.overflow = ''; // Re-enable page scrolling
+                }
+            });
+        });
+
+        // Close on overlay click
+        modals.forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // Close on Escape key press
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                modals.forEach(modal => {
+                    if (modal.classList.contains('open')) {
+                        modal.classList.remove('open');
+                        document.body.style.overflow = '';
+                    }
+                });
             }
-        }
+        });
     }
 });
