@@ -232,47 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         canvasObserver.observe(document.getElementById('home'));
     }
 
-    // ==========================================
-    // 5. INTERACTIVE SKILLS PROGRESS ANIMATION
-    // ==========================================
-    const skillsSection = document.getElementById('skills');
-    const skillBars = document.querySelectorAll('.skill-bar-fill');
-    const skillPercents = document.querySelectorAll('.skill-percent');
 
-    if (skillsSection && skillBars.length > 0) {
-        const skillsObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Fill up bars
-                    skillBars.forEach((bar, index) => {
-                        const target = skillPercents[index].getAttribute('data-target');
-                        bar.style.width = target;
-                    });
-
-                    // Animate number count
-                    skillPercents.forEach(percent => {
-                        const target = parseInt(percent.getAttribute('data-target'));
-                        let current = 0;
-                        const increment = target / 50; // Complete count in 50 frames
-                        const timer = setInterval(() => {
-                            current += increment;
-                            if (current >= target) {
-                                percent.textContent = target + '%';
-                                clearInterval(timer);
-                            } else {
-                                percent.textContent = Math.floor(current) + '%';
-                            }
-                        }, 20);
-                    });
-
-                    // Stop observing once animated
-                    skillsObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.2 });
-
-        skillsObserver.observe(skillsSection);
-    }
 
     // ==========================================
     // 6. PROJECTS CAROUSEL SLIDER
